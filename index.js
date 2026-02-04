@@ -1,12 +1,11 @@
 const express = require("express");
-const axios = require("axios");
 const app = express();
 
 app.use(express.json());
 
 // GET /webhook → проверка Meta
 app.get("/webhook", (req, res) => {
-  const VERIFY_TOKEN = process.env.VERIFY_TOKEN; // verify123
+  const VERIFY_TOKEN = process.env.VERIFY_TOKEN || "verify123";
   const mode = req.query["hub.mode"];
   const token = req.query["hub.verify_token"];
   const challenge = req.query["hub.challenge"];
@@ -23,34 +22,9 @@ app.get("/webhook", (req, res) => {
 });
 
 // POST /webhook → получение сообщений Instagram
-app.post("/webhook", async (req, res) => {
-  try {
-    const TG_TOKEN = process.env.TG_TOKEN;
-    const TG_CHAT_ID = process.env.TG_CHAT_ID;
-
-    const entries = req.body.entry || [];
-    for (const entry of entries) {
-      const messages = entry.messaging || [];
-      for (const messageEvent of messages) {
-        if (messageEvent.message && messageEvent.sender) {
-          const text = messageEvent.message.text || "<без текста>";
-          const fromId = messageEvent.sender.id;
-
-          // Отправка в Telegram
-          await axios.post(
-            `https://api.telegram.org/bot${TG_TOKEN}/sendMessage`,
-            {
-              chat_id: TG_CHAT_ID,
-              text: `📩 Новое сообщение в Instagram:\nОт: ${fromId}\nТекст: ${text}`
-            }
-          );
-        }
-      }
-    }
-  } catch (e) {
-    console.error("Ошибка при отправке в Telegram:", e.message);
-  }
-
+app.post("/webhook", (req, res) => {
+  console.log("Новое сообщение Instagram:", JSON.stringify(req.body, null, 2));
+  // пока просто логируем сообщения в консоль
   res.sendStatus(200);
 });
 
