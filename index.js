@@ -1,12 +1,12 @@
 const express = require("express");
 const axios = require("axios");
-
 const app = express();
+
 app.use(express.json());
 
 // GET /webhook → проверка Meta
 app.get("/webhook", (req, res) => {
-  const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
+  const VERIFY_TOKEN = process.env.VERIFY_TOKEN; // verify123
   const mode = req.query["hub.mode"];
   const token = req.query["hub.verify_token"];
   const challenge = req.query["hub.challenge"];
@@ -25,7 +25,6 @@ app.get("/webhook", (req, res) => {
 // POST /webhook → получение сообщений Instagram
 app.post("/webhook", async (req, res) => {
   try {
-    // читаем переменные только во время runtime
     const TG_TOKEN = process.env.TG_TOKEN;
     const TG_CHAT_ID = process.env.TG_CHAT_ID;
 
@@ -37,12 +36,12 @@ app.post("/webhook", async (req, res) => {
           const text = messageEvent.message.text || "<без текста>";
           const fromId = messageEvent.sender.id;
 
-          // отправка в Telegram
+          // Отправка в Telegram
           await axios.post(
             `https://api.telegram.org/bot${TG_TOKEN}/sendMessage`,
             {
               chat_id: TG_CHAT_ID,
-              text: `📩 Новое сообщение в Instagram:\nОт: ${fromId}\nТекст: ${text}`,
+              text: `📩 Новое сообщение в Instagram:\nОт: ${fromId}\nТекст: ${text}`
             }
           );
         }
@@ -58,4 +57,3 @@ app.post("/webhook", async (req, res) => {
 // Слушаем порт Railway
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server listening on port ${PORT}`));
-
