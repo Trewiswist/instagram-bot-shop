@@ -4,13 +4,9 @@ const app = express();
 
 app.use(express.json());
 
-// Получаем переменные окружения из Railway
-const VERIFY_TOKEN = process.env.VERIFY_TOKEN; // verify123
-const TG_TOKEN = process.env.TG_TOKEN;         // Telegram Bot Token
-const TG_CHAT_ID = process.env.TG_CHAT_ID;     // Telegram ID
-
 // GET /webhook → проверка Meta
 app.get("/webhook", (req, res) => {
+  const VERIFY_TOKEN = process.env.VERIFY_TOKEN; // verify123
   const mode = req.query["hub.mode"];
   const token = req.query["hub.verify_token"];
   const challenge = req.query["hub.challenge"];
@@ -28,6 +24,10 @@ app.get("/webhook", (req, res) => {
 
 // POST /webhook → получение сообщений Instagram
 app.post("/webhook", async (req, res) => {
+  // Читаем переменные только здесь, во время runtime
+  const TG_TOKEN = process.env.TG_TOKEN;
+  const TG_CHAT_ID = process.env.TG_CHAT_ID;
+
   console.log("POST /webhook", JSON.stringify(req.body, null, 2));
 
   try {
@@ -39,7 +39,6 @@ app.post("/webhook", async (req, res) => {
           const text = messageEvent.message.text || "<без текста>";
           const fromId = messageEvent.sender.id;
 
-          // Отправка в Telegram
           await axios.post(
             `https://api.telegram.org/bot${TG_TOKEN}/sendMessage`,
             {
