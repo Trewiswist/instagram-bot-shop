@@ -1,15 +1,12 @@
 import express from "express";
 
 const app = express();
-
-// Railway / Express
 app.use(express.json());
 
-// ====== ENV переменные ======
-const PAGE_TOKEN = process.env.PAGE_TOKEN;   // Page Access Token
-const VERIFY_TOKEN = process.env.VERIFY_TOKEN; // например: my_verify_token
+// ===== Переменные окружения =====
+const VERIFY_TOKEN = process.env.VERIFY_TOKEN || "my_verify_token";
 
-// ====== Проверка webhook (GET) ======
+// ===== Проверка webhook (Facebook / Instagram) =====
 app.get("/webhook", (req, res) => {
   const mode = req.query["hub.mode"];
   const token = req.query["hub.verify_token"];
@@ -24,53 +21,14 @@ app.get("/webhook", (req, res) => {
   }
 });
 
-// ====== Приём событий (POST) ======
-app.post("/webhook", async (req, res) => {
-  try {
-    const entry = req.body.entry?.[0];
-    const change = entry?.changes?.[0];
-    const value = change?.value;
-
-    // Сообщение из Instagram
-    if (value?.messages?.[0]) {
-      const message = value.messages[0];
-      const senderId = message.from;
-      const text = message.text?.body;
-
-      console.log("📩 Новое сообщение:", text);
-
-      if (text) {
-        await sendMessage(senderId, `Вы написали: ${text}`);
-      }
-    }
-
-    res.sendStatus(200);
-  } catch (err) {
-    console.error("Ошибка webhook:", err);
-    res.sendStatus(500);
-  }
+// ===== Приём сообщений (POST) =====
+app.post("/webhook", (req, res) => {
+  console.log("📩 Входящее событие:", JSON.stringify(req.body, null, 2));
+  // Пока просто логируем события
+  res.sendStatus(200);
 });
 
-// ====== Отправка сообщения ======
-async function sendMessage(recipientId, text) {
-  const url = `https://graph.facebook.com/v18.0/me/messages?access_token=${PAGE_TOKEN}`;
-
-  const payload = {
-    recipient: { id: recipientId },
-    message: { text }
-  };
-
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
-
-  const data = await response.json();
-  console.log("📤 Ответ отправлен:", data);
-}
-
-// ====== Запуск сервера ======
+// ===== Запуск сервера =====
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Сервер запущен на порту ${PORT}`);
