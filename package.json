@@ -1,6 +1,7 @@
 {
   "name": "instagram-bot-simple",
   "version": "1.0.0",
+  "description": "Минимальный Instagram Webhook бот для Railway",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
