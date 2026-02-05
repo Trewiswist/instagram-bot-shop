@@ -1,18 +1,16 @@
 const express = require('express');
 
 const app = express();
-
-// Railway сам передаёт порт через переменную окружения
 const PORT = process.env.PORT || 8080;
 
-// 👉 ПРОВЕРКА, ЧТО СЕРВЕР ЖИВОЙ
+// Проверка сервера
 app.get('/', (req, res) => {
   res.status(200).send('OK');
 });
 
-// 👉 ПРОВЕРКА WEBHOOK ОТ INSTAGRAM
+// Webhook для Instagram
 app.get('/webhook', (req, res) => {
-  const VERIFY_TOKEN = 'my_verify_token';
+  const VERIFY_TOKEN = 'my_verify_token'; // сюда позже можешь поставить свою переменную окружения
 
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
@@ -27,7 +25,7 @@ app.get('/webhook', (req, res) => {
   }
 });
 
-// 👉 ЗАПУСК СЕРВЕРА
+// Запуск сервера
 app.listen(PORT, () => {
   console.log(`🚀 Сервер запущен на порту ${PORT}`);
 });
